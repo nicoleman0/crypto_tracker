@@ -32,13 +32,14 @@ def plot_prices(data_frame):
 
 
 # Example Usage:
-# Create a new Dataframe in the main area.
+# Create a new Dataframe
 frame = pd.DataFrame(cyrpto_data)
 
-# Add some data
+# Add data
 frame = add_to_frame("bitcoin", get_price("bitcoin"), frame)
 frame = add_to_frame("ethereum", get_price("ethereum"), frame)
 frame = add_to_frame("dogecoin", get_price('dogecoin'), frame)
+frame = add_to_frame("XRP", get_price('XRP'), frame)
 
 #plot prices, now the dataframe is passed in.
 plot_prices(frame)
