@@ -2,24 +2,41 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def get_price(bitcoin):
-    """fetches price of bitcoin from coingecko API"""
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=" + bitcoin + '&vs_currencies=usd'
+def get_price(coin_id):
+    """Fetches the price of a cryptocurrency from the CoinGecko API."""
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
     response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for bad status codes (HTTP errors like 404 or 500)
     price_data = response.json()
-    return price_data[bitcoin]['usd']
+    return price_data[coin_id]['usd']
 
 cyrpto_data = {'Name': [], 'Price': []}
-frame = pd.DataFrame(cyrpto_data) # Creates empty dataframe using crypto_data
+frame = pd.DataFrame(cyrpto_data)  # Creates an empty DataFrame
 
-def add_to_frame(name, price, data_frame):
-    """creates a DataFrame to display prices"""
-    data_frame.loc[len(data_frame)] = [name, price] # Add the data as a row to the existing data frame
-    print(data_frame)
+def add_to_frame(name, coin_id, data_frame):
+    """Adds a cryptocurrency's name and price to the DataFrame.
+
+    Args:
+        name (str): The display name of the cryptocurrency (e.g., "Bitcoin", "Ethereum").
+        coin_id (str): The lowercase ID used for the API call (e.g. bitcoin, ethereum, xrp).
+        data_frame (pd.DataFrame): The DataFrame to add data to.
+
+    Returns:
+        pd.DataFrame: The updated DataFrame.
+    """
+    try:
+        price = get_price(coin_id)
+        data_frame.loc[len(data_frame)] = [name, price]
+        print(data_frame)
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data for {name}: {e}")
+    except KeyError as e:
+        print(f"Error: Invalid coin ID or API response format for {name}. Key error: {e}")
+
     return data_frame
 
 def plot_prices(data_frame):
-    """plots the price data on a bar graph"""
+    """Plots the price data on a bar graph."""
     if data_frame.empty:
         print("The DataFrame is empty. No data to plot.")
         return
@@ -30,16 +47,12 @@ def plot_prices(data_frame):
     plt.title('Current Crypto Prices')
     plt.show()
 
-
 # Example Usage:
-# Create a new Dataframe
 frame = pd.DataFrame(cyrpto_data)
 
-# Add data
-frame = add_to_frame("bitcoin", get_price("bitcoin"), frame)
-frame = add_to_frame("ethereum", get_price("ethereum"), frame)
-frame = add_to_frame("dogecoin", get_price('dogecoin'), frame)
-frame = add_to_frame("XRP", get_price('XRP'), frame)
+# Correct coin ids used
+frame = add_to_frame("Bitcoin", "bitcoin", frame)
+frame = add_to_frame("Ethereum", "ethereum", frame)
+frame = add_to_frame("Dogecoin", "dogecoin", frame)
 
-#plot prices, now the dataframe is passed in.
 plot_prices(frame)
